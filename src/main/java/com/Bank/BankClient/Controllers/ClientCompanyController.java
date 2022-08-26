@@ -51,7 +51,7 @@ public class ClientCompanyController {
 
     /**
      * Guardar nuevo cliente empresa
-     * @param oClient
+     * @param clientCompany
      * @return
      */
     @PostMapping()
@@ -61,7 +61,7 @@ public class ClientCompanyController {
 
     /**
      * Actualizar datos de cliente empresa
-     * @param oClient
+     * @param clientCompany
      * @return
      */
     @PutMapping("/{id}")

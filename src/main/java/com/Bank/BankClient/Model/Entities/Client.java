@@ -20,6 +20,7 @@ public class Client {
 
     @Id
     private String id_client;
+    private String type;
     private Boolean active;
     private Date register_date;
     private Date update_date;
