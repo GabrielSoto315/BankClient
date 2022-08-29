@@ -25,7 +25,7 @@ public class ClientServiceImp implements ClientService {
     @Override
     public Mono<ResponseHandler> findbyId(String id) {
         Client client = new Client();
-        client.setId_client(id);
+        client.setIdClient(id);
         return clientCompanyRepository.existsById(id).flatMap(checkCompany-> {
             if (checkCompany){
                 client.setType("Company");

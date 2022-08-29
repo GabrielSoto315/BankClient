@@ -16,12 +16,12 @@ import java.util.Date;
 public class Client {
 
     @Transient
-    public static final String SEQUENCE_NAME = "client_sequence";
+    public static final String SEQUENCE_NAME = "ClientSequence";
 
     @Id
-    private String id_client;
+    private String idClient;
     private String type;
     private Boolean active;
-    private Date register_date;
-    private Date update_date;
+    private Date registerDate;
+    private Date updateDate;
 }

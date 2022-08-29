@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(value= "ClientPerson")
 public class ClientPerson extends Client {
 
-    private String last_name;
-    private String first_name;
-    private String id_card;
+    private String firstName;
+    private String lastName;
+    private String idCard;
 }

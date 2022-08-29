@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(value = "ClientCompany")
 public class ClientCompany extends Client {
 
-    private String id_number;
+    private String idNumber;
     private String name;
 }

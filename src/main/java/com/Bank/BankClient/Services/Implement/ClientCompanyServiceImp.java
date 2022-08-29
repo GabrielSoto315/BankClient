@@ -30,37 +30,61 @@ public class ClientCompanyServiceImp implements ClientCompanyService {
     public Mono<ResponseHandler> findAll() {
         return clientCompanyRepository.findAll()
                 .doOnNext(client -> log.info(client.toString()))
+                .filter(f -> f.getActive().equals(true))
                 .collectList()
-                .map(x -> new ResponseHandler("Done", HttpStatus.OK, x))
+                .map(res -> new ResponseHandler("Done", HttpStatus.OK, res))
                 .onErrorResume(error -> Mono.just(new ResponseHandler(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
     }
 
     @Override
     public Mono<ResponseHandler> find(String id) {
-        return clientCompanyRepository.findById(id)
-                .doOnNext(client -> log.info(client.toString()))
-                .map(x -> new ResponseHandler("Done", HttpStatus.OK, x))
-                .onErrorResume(error -> Mono.just(new ResponseHandler(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+
+        return clientCompanyRepository.existsById(id).flatMap(exist -> {
+            if (exist){
+                return clientCompanyRepository.findById(id)
+                        .doOnNext(client -> log.info(client.toString()))
+                        .map(res -> {
+                            if (res.getActive()){
+                                return new ResponseHandler("Done", HttpStatus.OK, res);
+                            } else {
+                                return new ResponseHandler("Not found", HttpStatus.NOT_FOUND, null);
+                            }
+                        })
+                        .onErrorResume(error -> Mono.just(new ResponseHandler(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+            } else {
+                return Mono.just(new ResponseHandler("Not found", HttpStatus.NOT_FOUND, null));
+            }
+        });
     }
 
     @Override
     public Mono<ResponseHandler> create(ClientCompany client) {
-        client.setId_client(String.format("191%010d", sequenceService.getSequenceNumber(SEQUENCE_NAME)));
-        client.setActive(true);
-        client.setRegister_date(new Date());
-        return clientCompanyRepository.save(client)
+        log.info("Start Create new client company");
+        return sequenceService.getSequenceNumber(SEQUENCE_NAME).flatMap(seq -> {
+            client.setIdClient(String.format("191%010d", seq));
+            client.setActive(true);
+            client.setRegisterDate(new Date());
+            client.setType("Company");
+            log.info("Client data : " + client);
+            return clientCompanyRepository.save(client)
                     .map(x -> new ResponseHandler("Done", HttpStatus.OK, x))
                     .onErrorResume(error -> Mono.just(new ResponseHandler(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+
+        });
     }
 
     @Override
     public Mono<ResponseHandler> update(String id, ClientCompany client) {
         return clientCompanyRepository.existsById(id).flatMap(check -> {
             if (check){
-                client.setUpdate_date(new Date());
-                return clientCompanyRepository.save(client)
-                        .map(x -> new ResponseHandler("Done", HttpStatus.OK, x)                )
-                        .onErrorResume(error -> Mono.just(new ResponseHandler(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+                return clientCompanyRepository.findById(id).flatMap(findClient ->{
+                    findClient.setIdNumber(client.getIdNumber() != null ? client.getIdNumber() : findClient.getIdNumber());
+                    findClient.setName(client.getName() != null ? client.getName() : findClient.getName());
+                    findClient.setUpdateDate(new Date());
+                    return clientCompanyRepository.save(findClient)
+                            .map(x -> new ResponseHandler("Done", HttpStatus.OK, x)                )
+                            .onErrorResume(error -> Mono.just(new ResponseHandler(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+                });
             }
             else
                 return Mono.just(new ResponseHandler("Not found", HttpStatus.NOT_FOUND, null));
