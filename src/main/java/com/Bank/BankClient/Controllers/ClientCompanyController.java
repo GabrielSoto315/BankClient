@@ -5,6 +5,7 @@ import com.Bank.BankClient.Model.Entities.ResponseHandler;
 import com.Bank.BankClient.Repository.Data.ClientCompanyRepository;
 import com.Bank.BankClient.Services.ClientCompanyService;
 import com.Bank.BankClient.Services.SequenceGeneratorService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,7 @@ public class ClientCompanyController {
      * @return
      */
     @PostMapping()
+    @CircuitBreaker(name="sequence", fallbackMethod = "fallBackSequence")
     public Mono<ResponseHandler> Save(@RequestBody ClientCompany clientCompany){
         return clientCompanyService.create(clientCompany);
     }
@@ -78,4 +80,15 @@ public class ClientCompanyController {
     public Mono<ResponseHandler> DeletebyId(@PathVariable("id") String id){
         return clientCompanyService.delete(id);
     }
+
+
+    /**
+     * Circuit braker
+     * @param runtimeException
+     * @return
+     */
+    public Mono<ResponseHandler> fallBackSequence(RuntimeException runtimeException){
+        return Mono.just(new ResponseHandler("MicroService not available", HttpStatus.BAD_REQUEST,runtimeException.getMessage()));
+    }
+
 }
